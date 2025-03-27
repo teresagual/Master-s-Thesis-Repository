@@ -1,8 +1,6 @@
 ---
-title: "3.9.1.1.\tCódigo clustering con la distancia euclidiana"
+title: "Clustering code with Euclidean distance"
 author: "Teresa Gual"
-date: "2025-03-27"
-output: html_document
 ---
 
 
