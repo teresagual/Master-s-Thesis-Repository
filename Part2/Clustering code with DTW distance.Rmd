@@ -1,0 +1,49 @@
+---
+title: "Clustering code with DTW distance"
+author: "Teresa Gual"
+---
+
+## To see how the DTW distance works, we take an example of time series
+
+```{r cars}
+a1 <- c(68, 68, 68, 70, 71, 70, 70, 70, 70, 69, 69, 69, 69, 68, 66, 66, 65, 65, 65, 64, 64, 64, 64, 64)
+a2 <- c(46, 45, 43, 46, 46, 49, 48, 47, 44, 44, 43, 43, 44, 44, 45, 51, 48, 49, 50, 48, 47, 46, 46, 46)
+
+xrange <- range(1:24)
+yrange <- range(c(a1,a2))
+#Dibujamos las dos series
+plot(xrange, yrange, type="n", xlab="Years from 1999",
+     ylab="ODS2", xaxp  = c(1,24,23), yaxp  = c(20,90,7)) 
+lines(a1, col='blue', type='l')
+lines(a2, col='magenta', type='l')
+```
+
+## We install specific libraries to work with the DTW distance
+
+```{r}
+install.packages("dtw")
+install.packages("dtwclust")
+library(dtw)
+library(dtwclust)
+#Vemos como es la asignación de puntos y la dibujamos
+dtw(a1,a2)$index1
+dtw(a1,a2)$index2
+plot(dtw(a1,a2, keep=TRUE), xlab="ODS2- Pais 1", ylab="ODS2- Pais 2", xaxp  = c(0,24,24), yaxp = c(0,24,24), type="threeway")
+plot(dtw(a1,a2, keep=TRUE),  type="twoway", col=c('blue', 'magenta'))
+```
+
+## ODS2 matrix
+
+```{r}
+series_ODS2 <- split(ODS2, row(ODS2))
+```
+
+## Apply K-means with DTW
+```{r}
+kmeans_ODS2 <- tsclust(series_ODS2, type = "partitional", k = 2, distance = "dtw")
+
+kmeans_ODS2@cluster
+kmeans_ODS2@centroids
+
+```
+
