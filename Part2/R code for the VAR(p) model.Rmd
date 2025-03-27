@@ -1,0 +1,117 @@
+---
+title: "R code for the VAR(p) model"
+author: "Teresa Gual"
+---
+
+## Load the necessary libraries
+
+```{r}
+install.packages("vars")
+install.packages("tseries")
+install.packages("dynlm")
+install.packages("forecast")
+install.packages("readxl") #Para cargar el archivo Excel a RStuio
+library(vars)
+library(tseries)
+library(forecast)
+library(dynlm)
+library(readxl)
+
+```
+
+## Load the Excel sheet with the time series data
+## Specify the file path
+```{r}
+ruta_archivo <- "/Users/TeresaGual/Desktop/EjemploVAR-6.xlsx"
+```
+
+## Read the Excel file
+```{r}
+datos <- read_excel(ruta_archivo)
+```
+
+## Convert the data from each ODS to time series
+```{r}
+datosSDG2=ts(datos$SDG2)
+datosSDG6=ts(datos$SDG6)
+datosSDG7=ts(datos$SDG7)
+datosSDG15=ts(datos$SDG15)
+```
+
+## Plot the time series of the 4 ODS
+```{r}
+ts.plot(datosSDG2,datosSDG6,datosSDG7, datosSDG15, col=c("blue","red","green", "black"), xlab = "Años desde 2000", ylab = "ODS UE")
+```
+
+## Calculate the necessary differences to achieve stationarity
+```{r}
+ndiffs(ldatosSDG2)
+ndiffs(ldatosSDG6)
+ndiffs(ldatosSDG7)
+ndiffs(ldatosSDG15)
+```
+
+## Plot the transformed time series of the 4 ODS
+```{r}
+ts.plot(d2SDG2, d2SDG6,d2SDG7, d2SDG15, col=c("blue","red","green", "black"), xlab = "Años desde 2000", ylab = "Series ODS UE")
+```
+
+## ADF test for each series to check stationarity
+```{r}
+adf.test(d2SDG2)
+adf.test(d2SDG6)
+adf.test(d2SDG7)
+adf.test(d2SDG15)
+```
+
+## Create a new object for VAR with the stationary variables
+```{r}
+vard2SDG2=ts(d2SDG2, start=2000)
+vard2SDG6=ts(d2SDG6, start=2000)
+vard2SDG7=ts(d2SDG7, start=2000)
+vard2SDG15=ts(d2SDG15, start=2000)
+```
+
+## Combine the variables into a matrix
+```{r}
+ejvar=cbind(vard2SDG2,vard2SDG6,vard2SDG7,vard2SDG15)
+```
+
+## Select the optimal number of lags, maximum 2
+```{r}
+VARselect(ejvar,lag.max=4)
+```
+
+## Perform Granger causality tests to see which ODS affects which ODS
+```{r}
+grangertest(dSDG15~dSDG7, order=4)
+```
+
+## Study the stationarity in each column of ejvar
+```{r}
+adf.test(ejvar[, 1])  # Apply ADF to the first column
+```
+
+## If there is no stationarity, take second differences
+```{r}
+d2SDG2=diff(dSDG2)
+d2SDG6=diff(dSDG6)
+d2SDG7=diff(dSDG7)
+d2SDG15=diff(dSDG15)
+```
+
+## Repeat the previous steps
+##Create a new object for VAR with the stationary variables
+```{r}
+vard2SDG2=ts(d2SDG2, start=2000)
+vard2SDG6=ts(d2SDG6, start=2000)
+vard2SDG7=ts(d2SDG7, start=2000)
+vard2SDG15=ts(d2SDG15, start=2000)
+
+ejvar=cbind(vard2SDG2,vard2SDG6,vard2SDG7,vard2SDG15)
+```
+
+## Calculate the models for the 4 ODS
+```{r}
+var1<-VAR(ejvar,p=3) #p=3 if I consider 3 lags
+```
